@@ -24,15 +24,24 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Save a Recipe
 router.put("/", async (req, res) => {
+  const { recipeID, userID } = req.body;
+
   try {
-    const recipe = await RecipesModel.findById(req.body.recipeID);
-    const user = await UserModel.findById(req.body.userID);
+    const recipe = await RecipesModel.findById(recipeID);
+    const user = await UserModel.findById(userID);
+    if (!recipe || !user) {
+      // Check if recipe or user not found
+      return res.status(404).json({ message: "Recipe or user not found" });
+    }
+
     user.savedRecipes.push(recipe);
     await user.save();
-    res.json({ savedRecipes: user.savedRecipes });
-  } catch (error) {
-    res.json(error);
+    res.status(201).json({ savedRecipes: user.savedRecipes });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
   }
 });
 
@@ -51,9 +60,20 @@ router.get("/savedRecipes", async (req, res) => {
     const savedRecipes = await RecipesModel.find({
       _id: { $in: user.savedRecipes },
     });
-    res.json({ savedRecipes });
+    res.json({ savedRecipes: user?.savedRecipes });
   } catch (error) {
     res.json(error);
+  }
+});
+
+// Get id of saved recipes
+router.get("/savedRecipes/ids/:userId", async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.params.userId);
+    res.status(201).json({ savedRecipes: user?.savedRecipes });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
   }
 });
 
