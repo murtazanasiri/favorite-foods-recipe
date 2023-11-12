@@ -25,10 +25,14 @@ export const CreateRecipe = () => {
     // Convert the ingredients array to a string
     const ingredientsString = recipe.ingredients.join(", ");
     try {
-      await axios.post("http://localhost:3001/recipes", {
-        ...recipe,
-        ingredients: ingredientsString,
-      });
+      await axios.post(
+        "http://localhost:3001/recipes",
+        {
+          ...recipe,
+          ingredients: ingredientsString,
+        },
+        { headers: { authorization: cookies.access_token } }
+      );
 
       alert("Recipe Created");
       navigate("/");
